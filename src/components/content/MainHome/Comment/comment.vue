@@ -60,7 +60,7 @@
 		},
 		methods: {
 			async likeCurrentComment(isBooth, id) {
-				if (!this.$store.state.home.login.token) {
+				if (!this.$store.state.home.login.profile.userId) {
 					this.$message.error('请登录再试')
 					return false
 				}
@@ -89,7 +89,7 @@
 				this.$emit('getComment')
 			},
 			async sentMyComment() {
-				if (!this.$store.state.home.login.token) {
+				if (!this.$store.state.home.login.profile.userId) {
 					this.$message.error('请登录再试')
 					return false
 				}

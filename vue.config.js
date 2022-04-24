@@ -8,26 +8,21 @@ module.exports = {
 				'views':'@/views',
 				'api':'@/api',
 				'store':'@/store',
-				'mock':'@/mock',
 				'utils':'@/utils',
 			}
 		}
 	},
 	devServer: {
-		// host:'http://localhost',
-		port:8080,
-		https:false,
 	    proxy: {
-	        '/api': {
-	            target: 'https://neteasecloudmusicapi.vercel.app/#/',
-	            changeOrigin: true,
+	        '/api': {  //触发匹配路径
+	            target: 'http://www.codeman.ink:3000/',  // 代理跳转到的站点
+	            changeOrigin: true, // 允许跨域
 	            ws: true,
 				secure:false,
-	            pathRewrite: {
+	            pathRewrite: {  // 重写路径：去掉路径中开头的'/api'
 	                '^/api': ''
 	            }
 	        },
-			
-	    }
+		}
 	},
 }

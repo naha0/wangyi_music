@@ -48,9 +48,8 @@ const mutations ={
 	},
 	// 当前播放音乐的索引
 	updateCurrentIndex(state, index) {
-	    // console.log('updateCurrentIndex');
 	    state.currentIndex = index;
-	    console.log(state.currentIndex);
+	    // console.log(state.currentIndex);
 	},
 	// 当前播放时间
 	updateCurrentTime(state,time){

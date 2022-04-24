@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-const login = () => import('@/views/login.vue')
 const home = () => import('@/views/home/index.vue')
 const hi = () => import('@/views/home/hi.vue')
 const newsong = () => import('@/views/home/newsong.vue')

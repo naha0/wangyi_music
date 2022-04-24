@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<div ref="login" v-if="!login.token">
+		<div ref="login" v-if="!login.profile.userId">
 			<el-dialog title="手机号登录" :visible.sync="loginVisible" width="30%" :modal="false" :show-close="true"
 				:close-on-click-modal="false" @open="openDialog">
 				<el-form :model="loginForm" :rules="rules" ref="loginForm" class="demo-ruleForm" label-width="80px">
@@ -18,7 +18,10 @@
 						<el-button @click="getlogin" class="register_next">登录</el-button>
 					</el-form-item>
 				</el-form>
-				<span slot="footer" @click="nextClick">返回注册</span>
+				<div slot="footer" class="footer">
+					<span @click="nextClick">返回注册</span>
+					<span @click="qrKey" class="qr">二维码登录</span>
+				</div>
 			</el-dialog>
 		</div>
 
@@ -68,6 +71,7 @@
 	import {
 		mapState
 	} from 'vuex'
+	import QRCode from 'qrcode'
 	export default {
 		name: 'login',
 		data() {
@@ -83,7 +87,7 @@
 				if (RegPassword.test(value)) {
 					return callback()
 				}
-				callback(new Error('8-16个字符,不包含空格,必须包含数字,字母或字符至少两种'))
+				callback(new Error('6-16个字符,不包含空格,必须包含数字,字母或字符至少两种'))
 			}
 			return {
 				loginVisible: false,
@@ -98,6 +102,9 @@
 					password: '',
 					captcha: ''
 				},
+				loginInfo:{},
+				timer:null,
+				userCookie:'',
 				rules: {
 					phone: [{
 						required: true,
@@ -125,12 +132,17 @@
 				try {
 					this.$refs.loginForm.validate(async valid => {
 						if (!valid) return false
-						await this.$store.dispatch('getLogin', this.loginForm)
+						let timestamp = Date.parse(new Date());
+						await this.$store.dispatch('getLogin', {
+							phone:this.loginForm.phone,
+							password:this.loginForm.password,
+							withCredentials:true,
+							timestamp
+						})
 						this.$store.dispatch('getLoginState')
 						this.loginVisible = false
 						this.$message.success('成功登录')
-						// this.$refs.menus.getUser()
-						this.$forceUpdate()
+						this.$api.reqLoginState()
 					})
 				} catch (e) {
 					alert(e.message)
@@ -188,6 +200,66 @@
 				this.loginVisible = !this.loginVisible
 				this.registerVisible = !this.registerVisible
 			},
+			async qrKey(){
+				let res = await this.$api.reqLoginKey()
+				console.log(res)
+				if(res.code == 200){
+					this.loginInfo = res.data
+					this.getQrKey()
+				}
+			},
+			async getQrKey(){
+				let timestamp = Date.parse(new Date());
+				let res = await this.$api.reqQrCreate({
+					key:this.loginInfo.unikey,
+					timestamp
+				})
+				console.log(res)
+				let qrurl = await QRCode.toDataURL(res.data.qrurl)
+				
+				this.$alert(`<img src=${qrurl} />`, '二维码登录', {
+					dangerouslyUseHTMLString: true,
+					center: true,
+					showCancelButton: true,
+					showClose:false,
+					cancelButtonText: '取消',
+					beforeClose: (action, instance, done) => {
+						if (action === 'cancel') {
+							alert("取消登录")
+							// 关闭弹出框
+							done()
+						}else{
+							this.timer = setInterval(async () => {
+								let res1 = await this.$api.reqQrCheck({
+									key:this.loginInfo.unikey,
+									timestamp
+								})
+								console.log();
+								console.log(res1)
+								if(res1.code == 800){
+									clearInterval(this.timer)
+									this.timer = null
+									// 关闭弹出框
+									this.$msgbox.close()
+									this.$message.warning('二维码过期，请刷新重试')
+								}
+								if (res1.code == 803) {
+									this.userCookie = res1.cookie
+									this.$store.dispatch('getQrLogin',{
+										cookie:this.userCookie
+									})
+									this.loginVisible = false
+									clearInterval(this.timer)
+									this.timer = null
+									// 关闭弹出框
+									this.$msgbox.close()
+									this.$message.success('登录成功')
+								}
+							}, 1000)
+						}
+					}
+				})
+			}
 		},
 		computed: {
 			...mapState({
@@ -200,7 +272,15 @@
 
 <style scoped="">
 	/deep/ .el-dialog__footer {
+		padding: 0px 20px 20px;
 		text-align: left;
 		font-size: 14px;
+	}
+	.footer{
+		display: flex;
+		justify-content: space-between;
+	}
+	.qr{
+		color: #b0b9b4;
 	}
 </style>

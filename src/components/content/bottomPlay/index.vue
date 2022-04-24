@@ -1,6 +1,6 @@
 <template>
 	<div class="bottomControl">
-		<audio autoplay ref="audioPlayer" :src="musicUrl" @play="changeState(true)" @ended="Ended"
+		<audio autoplay ref="audioPlayer" :src="musicUrl" @play="changeState(true)" @ended="changeMusic('next')"
 			@timeupdate="timeUpdate"></audio>
 		<!-- 左边 -->
 		<div class="left">
@@ -39,7 +39,7 @@
 						@click="$store.state.play.currentIndex < $store.state.play.musicList.length ? changeMusic('next'): ''"></i></span>
 			</div>
 			<div class="progressBar">
-				<span class="currentTime">{{$utils.handleMusicTime($store.state.play.currentTime)}}</span>
+				<span class="currentTime">{{$utils.formatSecondTime($store.state.play.currentTime)}}</span>
 				<el-slider class="progressSlider" :show-tooltip="false" v-model="timeProgress" @change="changeProgress"
 					style="width: 500px;">
 				</el-slider>
@@ -101,7 +101,6 @@
 				volume: 30,
 				lyric:{},
 				lyricComment:{},
-				musicIndex:0
 			}
 		},
 		methods: {
@@ -174,17 +173,17 @@
 						this.$store.state.play.currentTime = time;
 						// 计算进度条的位置
 						this.timeProgress = Math.round(time / dt * 100)
-							if(this.$refs.audioPlayer.ended){
-								this.Ended()
-							}
+						if(this.$refs.audioPlayer.ended&&this.$store.state.play.currentIndex == this.$store.state.play.musicList.length-1){
+							this.Ended()
+						}
 					}
 				}
 			},
-			// 判断音频是否已播放结束
-			Ended() {
+			// 音频已完成播放
+			Ended(){
 				this.$store.commit('updateCurrentTime',0)
 				this.timeProgress = 0
-				this.$store.commit('changePlayState',false)
+				this.PauseMusic()
 			},
 			// 拖动进度条
 			changeProgress(e) {
@@ -200,20 +199,25 @@
 			},
 			// 点击暂停 停止音乐
 			PauseMusic() {
-				console.log(333)
 				this.$refs.audioPlayer.pause();
 				this.$store.commit('changePlayState', false)
 			},
 			// 点击上一首下一首 
 			changeMusic(type) {
-				// let currentIndex = this.$store.state.play.currentIndex
 				if (type == 'pre') {
 					let preIndex = this.$store.state.play.currentIndex - 1
-					this.$store.state.play.musicId = this.$store.state.play.musicList[preIndex].id
+					if(preIndex >= 0){
+						this.$store.state.play.musicId = this.$store.state.play.musicList[preIndex].id
+					}
+					return;
 				}
 				if (type == 'next') {
 					let nextIndex = this.$store.state.play.currentIndex + 1
-					this.$store.state.play.musicId = this.$store.state.play.musicList[nextIndex].id
+					if(nextIndex < this.$store.state.play.musicList.length){
+						this.$store.state.play.musicId = this.$store.state.play.musicList[nextIndex].id
+					}
+					console.log(nextIndex)
+					return;
 				}
 			},
 			// 用户喜欢的歌单
@@ -235,8 +239,7 @@
 			},
 			// 判断用户是否喜欢
 			checkUserLike() {
-				if (this.$store.state.home.login.profile.userId) {
-					// this.$message.error('此操作需要用户登录')
+				if (!this.$store.state.home.login.profile.userId) {
 					return false
 				}
 				this.UserLikeList()
@@ -307,8 +310,8 @@
 					}
 				}
 			},
-			"$store.state.play.token": {
-				handerle(newValue, oldValue) {
+			"$store.state.home.login.profile.userId": {
+				handler(newValue, oldValue) {
 					if (newValue) {
 						this.UserLikeList();
 					} else {
@@ -316,25 +319,6 @@
 					}
 				}
 			},
-			// "$store.state.play.musicList":{
-			// 	handler(newValue,oldValue){
-			// 		if(this.$store.state.play.musicList[this.musicIndex].dt.indexOf(':') == -1){
-			// 			this.musicDetail = this.$store.state.play.musicList[this.musicIndex]
-			// 			// 直接从audio标签中的duration属性拿时长会有请求时差问题，所以直接在musicInfo中拿
-			// 			this.duration = this.$store.state.play.musicList[this.musicIndex].dt;
-			// 			return;
-			// 		}else{
-			// 			let time = this.$store.state.play.musicList[this.musicIndex].dt.split(':')
-			// 			let min = time[0]
-			// 			let sec = time[1]
-			// 			this.$store.state.play.musicList[this.musicIndex].dt = this.$utils.formatMiner(min,sec)
-			// 			this.musicDetail = this.$store.state.play.musicList[this.musicIndex]
-			// 			// 直接从audio标签中的duration属性拿时长会有请求时差问题，所以直接在musicInfo中拿
-			// 			this.duration = this.$store.state.play.musicList[this.musicIndex].dt;
-			// 			return;
-			// 		}
-			// 	}
-			// }
 		},
 		filters: {
 			rmlength(value) {

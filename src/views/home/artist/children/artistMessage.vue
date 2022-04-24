@@ -163,7 +163,7 @@
 				);
 			},
 			async subClick() {
-				if (!this.$store.state.home.login.token) {
+				if (!this.$store.state.home.login.profile.userId) {
 					this.$message.error("登录后再进行操作");
 					return;
 				}
@@ -204,7 +204,7 @@
 		mounted() {
 			this.getArtistTopSongs();
 			this.getAlbumInfo();
-			if (this.$store.state.home.login.token) {
+			if (this.$store.state.home.login.profile.userId) {
 					this.getIsSub();
 			}
 		},

@@ -14,7 +14,8 @@ import {
 	reqLoginState,
 	reqUserDetail,
 	reqUserPlaylist,
-	reqPlayListSubscribers
+	reqPlayListSubscribers,
+	reqUserAccount
 } from '@/api/index.js'
 
 import Cookie from 'js-cookie'
@@ -177,22 +178,34 @@ const actions = {
 			commit('SEARCH', res.result)
 		}
 	},
-	async getLogin({
-		commit
-	}, params = {}) {
-		const res = await reqLoginCellphone(params)
-		if (res.code !== 200) {
-			alert('登录失败')
-			return false
-		}
-		console.log(res)
-		commit('LOGIN', res)
-	},
-	getLogin({
-		commit
-	}, params = {}) {
+	// async getLogin({commit}, params = {}) {
+	// 	const res = await reqLoginCellphone(params)
+	// 	if (res.code !== 200) {
+	// 		alert('登录失败')
+	// 		return false
+	// 	}
+	// 	console.log(res)
+	// 	commit('LOGIN', res)
+	// },
+	getLogin({commit}, params = {}) {
 		return new Promise((resolve,reject)=>{
 			reqLoginCellphone(params).then(response=>{
+				console.log(response)
+				const {code} = response
+				console.log(code)
+				if(code !== 200){
+					reject('登录失败')
+				} 
+				commit('LOGIN', response)
+				resolve(response)
+			}).catch(err=>{
+				reject(err)
+			})
+		})
+	},
+	getQrLogin({commit}, params = {}) {
+		return new Promise((resolve,reject)=>{
+			reqUserAccount(params).then(response=>{
 				console.log(response)
 				const {code} = response
 				console.log(code)

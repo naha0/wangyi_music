@@ -73,7 +73,9 @@
 				playList: [],
 				defaultSong: '',
 				currentPage:1,
-				isMore:false
+				isMore:false,
+				more:false,
+				SongDetail:{}
 			}
 		},
 		mounted() {
@@ -113,10 +115,37 @@
 			async clickLoadItem(id) {
 				this.$router.push(`/playdetail/${id}`)
 				let res = await this.$api.reqPlaylistDetail(id)
-				let reslist = await this.$api.reqPlaylistAll(id)
+				let resPlaylist = res.playlist
+				let ids = ''
+				if(!this.$store.state.home.login.profile.userId){
+					if(resPlaylist.tracks.length !== resPlaylist.trackIds.length){
+						this.more = true
+						resPlaylist.tracks.forEach(item=>{
+							return ids += item.id + ','
+						})
+						ids = ids.substr(0,ids.length - 1)
+						this.SongDetail= await this.$api.reqSongDetail(ids)
+					}else{
+						this.more = false
+						resPlaylist.trackIds.forEach(item=>{
+							return ids += item.id + ','
+						})
+						ids = ids.substr(0,ids.length - 1)
+						this.SongDetail = await this.$api.reqSongDetail(ids)
+					}
+				}else{
+					this.more = false
+					resPlaylist.trackIds.forEach(item=>{
+						return ids += item.id + ','
+					})
+					ids = ids.substr(0,ids.length - 1)
+					this.SongDetail = await this.$api.reqSongDetail(ids)
+				}
 				this.$bus.$emit('playdetail',res)
-				this.$bus.$emit('playlistAll',reslist)
 				this.$bus.$emit('playlistId',id)
+				this.$bus.$emit('playlistAll',this.SongDetail)
+				this.$bus.$emit('playlistMore',this.more)
+				
 			},
 			bottomLoad() {
 			  // console.log("bottomLoad");

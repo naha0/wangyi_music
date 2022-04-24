@@ -67,6 +67,8 @@
 							</template>
 						</el-table-column>
 					</el-table>
+					<div v-show="isMores" class="isMore">登录后加载更多</div>
+					<div v-show="!isMores" class="noismore"></div>
 				</el-tab-pane>
 				<el-tab-pane label="评论" name="second">
 					<div>
@@ -103,7 +105,8 @@
 				playCommentType: 'playlist',
 				isPass: null,
 				isSub: false,
-				isCreated: false
+				isCreated: false,
+				isMores:false,
 			}
 		},
 		created() {
@@ -118,6 +121,9 @@
 					this.userplayId = id
 					this.getplayComment(this.userplayId)
 					this.getPlaySubscribers(this.userplayId)
+				})
+				this.$bus.$on('playlistMore', more => {
+					this.isMores = more
 				})
 			})
 		},
@@ -212,7 +218,7 @@
 				
 			},
 			async subClick() {
-				if (!this.$store.state.home.login.token) {
+				if (!this.$store.state.home.login.profile.userId) {
 				    this.$message.error("登录后再进行操作");
 				    return;
 				  }
@@ -237,7 +243,7 @@
 			}
 		},
 		mounted() {
-			if (this.$store.state.home.login.token) {
+			if (this.$store.state.home.login.profile.userId) {
 				// 先判断是否是用户创建的歌单
 				this.getIsCreated();
 				// 如果不是 再判断是否是收藏的歌单
@@ -402,5 +408,13 @@
 
 	/deep/ .el-tabs__item.is-active {
 		color: #ec4141;
+	}
+	.isMore{
+		text-align: center;
+		font-size: 14px;
+		margin: 20px 0 50px;
+	}
+	.noismore{
+		margin-bottom: 50px;
 	}
 </style>

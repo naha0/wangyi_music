@@ -4,11 +4,13 @@ import nprogress from 'nprogress'
 // 引入进度条样式
 import "nprogress/nprogress.css"
 
-export function request(config){
+const Url = process.env.NODE_ENV === 'development' ? '/api' : 'http://www.codeman.ink:3000/'
+
+export function request(config){	
 	const instance = axios.create({
-		baseURL:'http://localhost:3000',
-		timeout:100000,
-		withCredentials: true,
+		baseUrl:Url,
+		timeout:30000,
+		withCredentials:true
 	})
 	
 	instance.interceptors.request.use(config =>{

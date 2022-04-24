@@ -49,6 +49,11 @@
 		methods: {
 			goLogin() {
 				this.$refs.login.loginVisible = true
+				const h = this.$createElement;
+				this.$notify({
+				  title: '登录提示',
+				  message: h('i', { style: 'color: #f98077'}, '如果手机登录失败，可以用二维码登录')
+				});
 			},
 			search() {
 				this.searchShow = true
