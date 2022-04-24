@@ -1,0 +1,7 @@
+*.md linguist-language=Vue
+*.yml linguist-language=Vue
+*.html linguist-language=Vue
+*.js linguist-language=Vue
+*.xml linguist-language=Vue
+*.css linguist-language=Vue
+*.cmd linguist-language=Vue
