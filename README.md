@@ -39,6 +39,9 @@ npm run serve
 npm run build
 ```
 
+### 如果要设置在服务器中，用nginx代理地址http://www.codeman.ink:3000/
+
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
